@@ -31,15 +31,33 @@ import { Request, Response } from 'express';
   /**************************************************************************** */
 
   app.get('/filteredImage', async (req: Request, res: Response) => {
-    const image_url = req.query.image_url.toString();
+    const image_url = req.query.image_url;
     if (!image_url) {
       res.status(400).send("Image URL is required!");
     }
-    const filtered_image = await filterImageFromURL(image_url);
-    res.status(200).sendFile(filtered_image, () => {
-      deleteLocalFiles([filtered_image]);
-    })
+    try {
+      const filtered_image = await filterImageFromURL(image_url);
+      res.sendFile(filtered_image);
+      res.on("finish", () => {
+        deleteLocalFiles([filtered_image]);
+      });
+      console.log(filtered_image);
+    } catch(err) {
+      console.log(err);
+      res.status(500).send("Unexpected error");
+    }
   });
+
+  // app.get('/filteredImage', async (req: Request, res: Response) => {
+  //   const image_url = req.query.image_url.toString();
+  //   if (!image_url) {
+  //     res.status(400).send("Image URL is required!");
+  //   }
+  //   const filtered_image = await filterImageFromURL(image_url);
+  //   res.status(200).sendFile(filtered_image, () => {
+  //     deleteLocalFiles([filtered_image]);
+  //   })
+  // });
 
   //! END @TODO1
   
